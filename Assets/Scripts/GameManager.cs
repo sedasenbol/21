@@ -19,13 +19,13 @@ public class GameManager : MonoBehaviour
     private void OnEnable()
     {
         UIManager.OnStartWAliceButtonClicked += LoadSceneWAlice;
-        UIManager.OnStartWBobButtonCliceked += LoadSceneWBob;
+        UIManager.OnStartWBobButtonClicked += LoadSceneWBob;
     }
 
     private void OnDisable()
     {
         UIManager.OnStartWAliceButtonClicked -= LoadSceneWAlice;
-        UIManager.OnStartWBobButtonCliceked -= LoadSceneWBob;
+        UIManager.OnStartWBobButtonClicked -= LoadSceneWBob;
     }
 
     private void Start()

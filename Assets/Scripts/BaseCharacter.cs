@@ -4,24 +4,78 @@ using UnityEngine;
 
 public abstract class BaseCharacter : MonoBehaviour
 {
+    [SerializeField] private float movingForce;
+    [SerializeField] private float firstJumpForce;
+    [SerializeField] protected float jumpSpecialtyForce;
+
+    protected Rigidbody2D rb;
+    protected BoxCollider2D boxCollider;
+    protected CapsuleCollider2D capsuleCollider;
+
+    protected bool canPerformJumpSpecialty = false;
+
+    protected LastDirection lastDirection = LastDirection.right;
+
+    protected enum LastDirection
+    {
+        right = 1,
+        left = -1,
+    }
+
+    protected void MoveLeft() 
+    {
+        rb.AddForce(new Vector2(-movingForce, 0f));
+        lastDirection = LastDirection.left;
+    }
+
+    protected void MoveRight() 
+    {
+        rb.AddForce(new Vector2(movingForce, 0f));
+        lastDirection = LastDirection.right;
+    }
+
+    private void Jump() 
+    {
+        if (boxCollider.IsTouchingLayers(LayerMask.GetMask("Layout")))
+        {
+            rb.AddForce(new Vector2(0f, firstJumpForce));
+            canPerformJumpSpecialty = true;
+        }
+        else if (canPerformJumpSpecialty && !boxCollider.IsTouchingLayers(LayerMask.GetMask("Layout")))
+        {
+            PerformJumpSpecialty(lastDirection);
+            canPerformJumpSpecialty = false;
+        }
+    }
+
+    virtual protected void StopJumpSpecialty() { }
+    
+    virtual protected void PerformJumpSpecialty(LastDirection lastDirection) { }
 
     private void OnEnable()
     {
-        
+        UIManager.OnLeftButtonClicked += MoveLeft;
+        UIManager.OnRightButtonClicked += MoveRight;
+        UIManager.OnJumpButtonClicked += Jump;
     }
 
     private void OnDisable()
     {
-        
+        UIManager.OnLeftButtonClicked -= MoveLeft;
+        UIManager.OnRightButtonClicked -= MoveRight;
+        UIManager.OnJumpButtonClicked += Jump;
     }
 
-    virtual protected void Start()
+    private void Start()
     {
-        
+        rb = GetComponent<Rigidbody2D>();
+        boxCollider = GetComponent<BoxCollider2D>();
+        capsuleCollider = GetComponent<CapsuleCollider2D>();
     }
 
-    virtual protected void Update()
+    private void Update()
     {
-        
+
     }
+
 }

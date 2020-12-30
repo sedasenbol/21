@@ -4,24 +4,15 @@ using UnityEngine;
 
 public class Bob : BaseCharacter
 {
-
-    public void Jump()
+    protected override void PerformJumpSpecialty(LastDirection lastDirection)
     {
-
+        base.rb.velocity = Vector2.zero;
+        base.rb.AddForce(new Vector2(0, -base.jumpSpecialtyForce), ForceMode2D.Impulse);
     }
 
-    public void Walk()
+    protected override void StopJumpSpecialty()
     {
-
+        rb.velocity = Vector2.zero;
     }
 
-    protected override void Start()
-    {
-        
-    }
-
-    protected override void Update()
-    {
-        
-    }
 }
