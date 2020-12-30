@@ -3,24 +3,31 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 using UnityEngine.UI;
+using TMPro;
 
 public class UIManager : MonoBehaviour
 {
     public static event Action OnStartWAliceButtonClicked;
     public static event Action OnStartWBobButtonClicked;
+    public static event Action OnPauseButtonClicked;
+    public static event Action OnResumeButtonClicked;
     public static event Action OnLeftButtonClicked;
     public static event Action OnRightButtonClicked;
     public static event Action OnJumpButtonClicked;
 
-    [SerializeField] private Button StartWAliceButton;
-    [SerializeField] private Button StartWBobButton;
-    [SerializeField] private Button LeftButton;
-    [SerializeField] private Button RightButton;
-    [SerializeField] private Button JumpButton;
+    [SerializeField] private Button startWAliceButton;
+    [SerializeField] private Button startWBobButton;
+    [SerializeField] private Button pauseButton;
+    [SerializeField] private Button resumeButton;
+    [SerializeField] private Button leftButton;
+    [SerializeField] private Button rightButton;
+    [SerializeField] private Button jumpButton;
+    [SerializeField] private TextMeshProUGUI pausedText;
     [SerializeField] private float horizontalInputPeriod;
 
     private bool isGamepadActive = false;
     private bool isGameStarted = false;
+    private bool isGamePaused = false;
 
     private float lastLeftHorizontalInputTime = 0;
     private float lastRightHorizontalInputTime = 0;
@@ -40,6 +47,28 @@ public class UIManager : MonoBehaviour
         LoadGameUI();
     }
 
+    public void HandlePauseButtonClick()
+    {
+        pauseButton.gameObject.SetActive(false);
+        resumeButton.gameObject.SetActive(true);
+        leftButton.gameObject.SetActive(false);
+        rightButton.gameObject.SetActive(false);
+        jumpButton.gameObject.SetActive(false);
+        OnPauseButtonClicked?.Invoke();
+        isGamePaused = true;
+    }
+
+    public void HandleResumeButtonClick()
+    {
+        pauseButton.gameObject.SetActive(true);
+        resumeButton.gameObject.SetActive(false);
+        leftButton.gameObject.SetActive(true);
+        rightButton.gameObject.SetActive(true);
+        jumpButton.gameObject.SetActive(true);
+        OnResumeButtonClicked?.Invoke();
+        isGamePaused = false;
+    }
+
     public void HandleLeftButtonClick()
     {
         OnLeftButtonClicked?.Invoke();
@@ -57,17 +86,18 @@ public class UIManager : MonoBehaviour
 
     private void UnloadMainMenuUI()
     {
-        StartWAliceButton.gameObject.SetActive(false);
-        StartWBobButton.gameObject.SetActive(false);
+        startWAliceButton.gameObject.SetActive(false);
+        startWBobButton.gameObject.SetActive(false);
 
         isGameStarted = true;
     }
 
     private void LoadGameUI()
     {
-        LeftButton.gameObject.SetActive(true);
-        RightButton.gameObject.SetActive(true);
-        JumpButton.gameObject.SetActive(true);
+        leftButton.gameObject.SetActive(true);
+        rightButton.gameObject.SetActive(true);
+        jumpButton.gameObject.SetActive(true);
+        pauseButton.gameObject.SetActive(true);
     }
 
     private void CheckStartWAliceButton()
@@ -86,21 +116,36 @@ public class UIManager : MonoBehaviour
         OnStartWBobButtonClicked?.Invoke();
     }
 
+    private void CheckPauseAndResumeButton()
+    {
+        if (!Input.GetKeyDown(KeyCode.JoystickButton7)) { return; }
+
+        if (isGamePaused)
+        {
+            OnResumeButtonClicked?.Invoke();
+            pausedText.gameObject.SetActive(false);
+            isGamePaused = false;
+        }
+        else
+        {
+            OnPauseButtonClicked?.Invoke();
+            pausedText.gameObject.SetActive(true);
+            isGamePaused = true;
+        }
+    }
+
     private void CheckHorizontalInput()
     {
-        if (Input.GetAxis("Horizontal") == 0) { return; }
-
         if (Input.GetAxis("Horizontal") > 0 && lastRightHorizontalInputTime + horizontalInputPeriod < Time.time)
         {
             OnRightButtonClicked?.Invoke();
             lastRightHorizontalInputTime = Time.time;
         }
-        else if (Input.GetAxis("Horizontal") > 0 && lastRightHorizontalInputTime + horizontalInputPeriod < Time.time)
+        else if (Input.GetAxis("Horizontal") < 0 && lastLeftHorizontalInputTime + horizontalInputPeriod < Time.time)
         {
             OnLeftButtonClicked?.Invoke();
             lastLeftHorizontalInputTime = Time.time;
         }
-
     }
 
     private void CheckJumpButton()
@@ -124,8 +169,12 @@ public class UIManager : MonoBehaviour
         {
             CheckStartWAliceButton();
             CheckStartWBobButton();
+            return;
         }
-        else
+        
+        CheckPauseAndResumeButton();
+        
+        if (!isGamePaused)
         {
             CheckHorizontalInput();
             CheckJumpButton();

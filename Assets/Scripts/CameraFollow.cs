@@ -7,18 +7,19 @@ public class CameraFollow : MonoBehaviour
 {
     private Transform xform;
     private Transform targetTransform;
-    private readonly Vector2 offset = new Vector2(6f, 2f);
 
     [SerializeField] private float smoothTimeX;
-    [SerializeField] private float smoothTimeY;
+    [SerializeField] private float xOffset;
+    [SerializeField] private float yPosition;
+    [SerializeField] private float zPosition;
 
-    private Vector3 velocity = Vector3.zero;
+    private float xVelocity = 0;
 
     private bool isGameStarted = false;
 
     private void SwitchToGameCamera(Scene scene, LoadSceneMode mode)
     {
-        if (!new List<int> { 1, 2}.Contains(scene.buildIndex)) { return; }
+        if (scene.buildIndex == 0) { return; }
 
         xform = transform;
         targetTransform = GameObject.Find("Player").transform;
@@ -27,13 +28,11 @@ public class CameraFollow : MonoBehaviour
 
     private void SetPosition()
     {
-        float targetPositionX = targetTransform.position.x + offset.x;
-        float targetPositionY = targetTransform.position.y + offset.y;
+        float targetXPosition = targetTransform.position.x + xOffset;
 
-        float positionX = Mathf.SmoothDamp(xform.position.x, targetPositionX, ref velocity.x, smoothTimeX);
-        float positionY = Mathf.SmoothDamp(xform.position.y, targetPositionY, ref velocity.y, smoothTimeY);
+        float xPosition = Mathf.SmoothDamp(xform.position.x, targetXPosition, ref xVelocity, smoothTimeX);
 
-        xform.position = new Vector3(positionX, positionY, -10f);
+        xform.position = new Vector3(xPosition, yPosition, zPosition);
     }
 
     private void OnEnable()

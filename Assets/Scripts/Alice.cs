@@ -15,7 +15,7 @@ public class Alice : BaseCharacter
         lastVerticalSpeed = rb.velocity.y;
         rb.velocity = Vector2.zero;
         forwardDashTimer += Time.deltaTime;
-        base.rb.AddForce((int)lastDirection * new Vector2(base.jumpSpecialtyForce, 0f), ForceMode2D.Impulse);
+        rb.AddForce((int)lastDirection * new Vector2(jumpSpecialtyForce, 0f), ForceMode2D.Impulse);
     }
 
     private void CheckForwardDashTime()

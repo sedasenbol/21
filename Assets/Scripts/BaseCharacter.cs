@@ -4,7 +4,7 @@ using UnityEngine;
 
 public abstract class BaseCharacter : MonoBehaviour
 {
-    [SerializeField] private float movingForce;
+    [SerializeField] private float walkingSpeed;
     [SerializeField] private float firstJumpForce;
     [SerializeField] protected float jumpSpecialtyForce;
 
@@ -24,13 +24,13 @@ public abstract class BaseCharacter : MonoBehaviour
 
     protected void MoveLeft() 
     {
-        rb.AddForce(new Vector2(-movingForce, 0f));
+        rb.velocity = new Vector2(-walkingSpeed, 0f);
         lastDirection = LastDirection.left;
     }
 
     protected void MoveRight() 
     {
-        rb.AddForce(new Vector2(movingForce, 0f));
+        rb.velocity = new Vector2(walkingSpeed, 0f);
         lastDirection = LastDirection.right;
     }
 
@@ -48,9 +48,9 @@ public abstract class BaseCharacter : MonoBehaviour
         }
     }
 
-    virtual protected void StopJumpSpecialty() { }
-    
-    virtual protected void PerformJumpSpecialty(LastDirection lastDirection) { }
+    protected abstract void StopJumpSpecialty();
+
+    protected abstract void PerformJumpSpecialty(LastDirection lastDirection);
 
     private void OnEnable()
     {
@@ -71,11 +71,6 @@ public abstract class BaseCharacter : MonoBehaviour
         rb = GetComponent<Rigidbody2D>();
         boxCollider = GetComponent<BoxCollider2D>();
         capsuleCollider = GetComponent<CapsuleCollider2D>();
-    }
-
-    private void Update()
-    {
-
     }
 
 }

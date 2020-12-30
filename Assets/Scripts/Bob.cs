@@ -4,15 +4,18 @@ using UnityEngine;
 
 public class Bob : BaseCharacter
 {
+    private float lastVerticalSpeed;
+
     protected override void PerformJumpSpecialty(LastDirection lastDirection)
     {
-        base.rb.velocity = Vector2.zero;
-        base.rb.AddForce(new Vector2(0, -base.jumpSpecialtyForce), ForceMode2D.Impulse);
+        lastVerticalSpeed = rb.velocity.y;
+        rb.velocity = Vector2.zero;
+        rb.AddForce(new Vector2(0, -base.jumpSpecialtyForce), ForceMode2D.Impulse);
     }
 
     protected override void StopJumpSpecialty()
     {
-        rb.velocity = Vector2.zero;
+        rb.velocity = new Vector2(rb.velocity.x, lastVerticalSpeed);
     }
 
 }
