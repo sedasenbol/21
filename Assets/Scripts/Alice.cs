@@ -4,47 +4,46 @@ using UnityEngine;
 
 public class Alice : BaseCharacter
 {
-    private float forwardDashTimer = 0f;
-    [SerializeField] private float forwardDashDuration;
+    [SerializeField] private float jumpSpecialtyDuration;
 
+    private float jumpSpecialtyTimer;
     private float lastVerticalSpeed;
 
-    protected override void PerformJumpSpecialty(LastDirection lastDirection)
+    protected override void PerformJumpSpecialty(Direction lastDirection)
     {
         Physics2D.gravity = Vector2.zero;
         lastVerticalSpeed = rb.velocity.y;
         rb.velocity = Vector2.zero;
-        forwardDashTimer += Time.deltaTime;
-        rb.AddForce((int)lastDirection * new Vector2(jumpSpecialtyForce, 0f), ForceMode2D.Impulse);
+        jumpSpecialtyTimer += Time.deltaTime;
+        rb.AddForce((int)lastDirection * jumpSpecialtyForce * Vector2.right, ForceMode2D.Impulse);
     }
 
-    private void CheckForwardDashTime()
+    private void CheckJumpSpecialtyTime()
     {
-        if (forwardDashTimer == 0f) { return; }
-        if (forwardDashTimer > forwardDashDuration)
+        if (jumpSpecialtyTimer > jumpSpecialtyDuration)
         {
-            rb.velocity = new Vector2(0f, lastVerticalSpeed);
-            Physics2D.gravity = new Vector2(0f, -21f);
-            forwardDashTimer = 0f;
+            StopJumpSpecialty();
         }
         else
         {
-            forwardDashTimer += Time.deltaTime;
+            jumpSpecialtyTimer += Time.deltaTime;
         }
     }
 
     protected override void StopJumpSpecialty()
     {
-        rb.velocity = new Vector2(0f, lastVerticalSpeed);
+        rb.velocity = new Vector2(0f, -Mathf.Abs(lastVerticalSpeed));
         Physics2D.gravity = new Vector2(0f, -21f);
-        forwardDashTimer = 0f;
+        jumpSpecialtyTimer = 0f;
     }
 
     private void Update()
     {
-        CheckForwardDashTime();
+        if (jumpSpecialtyTimer == 0f) { return; }
 
-        if (!capsuleCollider.IsTouchingLayers(LayerMask.GetMask("Layout")) || canPerformJumpSpecialty) { return; }
+        CheckJumpSpecialtyTime();
+
+        if (!boxCollider.IsTouchingLayers(LayerMask.GetMask("Layout")) || CheckGroundCollision()) { return; }
 
         StopJumpSpecialty();
     }

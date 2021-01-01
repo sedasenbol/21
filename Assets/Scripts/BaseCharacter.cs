@@ -4,73 +4,94 @@ using UnityEngine;
 
 public abstract class BaseCharacter : MonoBehaviour
 {
-    [SerializeField] private float walkingSpeed;
+    [SerializeField] private float forwardSpeed;
     [SerializeField] private float firstJumpForce;
     [SerializeField] protected float jumpSpecialtyForce;
 
+    private Transform xform;
     protected Rigidbody2D rb;
     protected BoxCollider2D boxCollider;
-    protected CapsuleCollider2D capsuleCollider;
 
-    protected bool canPerformJumpSpecialty = false;
+    private Vector2 initialScale;
 
-    protected LastDirection lastDirection = LastDirection.right;
+    private const float RAY_DISTANCE = 0.05f;
+    private Vector2 raySize;
+    private LayerMask platformLayerMask;
 
-    protected enum LastDirection
+    protected bool canPerformJumpSpecialty = true;
+
+    protected Direction lastDirection = Direction.right;
+
+    public enum Direction
     {
         right = 1,
         left = -1,
     }
 
-    protected void MoveLeft() 
+    protected void SetForwardSpeed(Direction direction) 
     {
-        rb.velocity = new Vector2(-walkingSpeed, 0f);
-        lastDirection = LastDirection.left;
+        rb.velocity = new Vector2((int)direction * forwardSpeed, rb.velocity.y);
+        lastDirection = direction;
+        FlipSprite();
     }
 
-    protected void MoveRight() 
+    private void FlipSprite()
     {
-        rb.velocity = new Vector2(walkingSpeed, 0f);
-        lastDirection = LastDirection.right;
+        xform.localScale = new Vector2((int)lastDirection * initialScale.x, initialScale.y);
     }
 
     private void Jump() 
     {
-        if (boxCollider.IsTouchingLayers(LayerMask.GetMask("Layout")))
+        if (CheckGroundCollision())
         {
             rb.AddForce(new Vector2(0f, firstJumpForce));
             canPerformJumpSpecialty = true;
         }
-        else if (canPerformJumpSpecialty && !boxCollider.IsTouchingLayers(LayerMask.GetMask("Layout")))
+        else if (canPerformJumpSpecialty && !CheckGroundCollision())
         {
             PerformJumpSpecialty(lastDirection);
             canPerformJumpSpecialty = false;
         }
     }
 
+    protected bool CheckGroundCollision()
+    {
+        RaycastHit2D hit = Physics2D.BoxCast(boxCollider.bounds.center, raySize, 0f, Vector2.down, RAY_DISTANCE, platformLayerMask);
+
+        return hit.collider;
+    }
+
+    protected abstract void PerformJumpSpecialty(Direction lastDirection);
+
     protected abstract void StopJumpSpecialty();
 
-    protected abstract void PerformJumpSpecialty(LastDirection lastDirection);
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        if (collision.gameObject.layer != 8) { return; }
+
+        canPerformJumpSpecialty = false;
+    }
 
     private void OnEnable()
     {
-        UIManager.OnLeftButtonClicked += MoveLeft;
-        UIManager.OnRightButtonClicked += MoveRight;
+        UIManager.OnLeftOrRightButtonClicked += SetForwardSpeed;
         UIManager.OnJumpButtonClicked += Jump;
     }
 
     private void OnDisable()
     {
-        UIManager.OnLeftButtonClicked -= MoveLeft;
-        UIManager.OnRightButtonClicked -= MoveRight;
+        UIManager.OnLeftOrRightButtonClicked -= SetForwardSpeed;
         UIManager.OnJumpButtonClicked += Jump;
     }
 
     private void Start()
     {
+        xform = GetComponent<Transform>();
         rb = GetComponent<Rigidbody2D>();
         boxCollider = GetComponent<BoxCollider2D>();
-        capsuleCollider = GetComponent<CapsuleCollider2D>();
-    }
 
+        initialScale = xform.localScale;
+        raySize = boxCollider.bounds.size;
+        platformLayerMask = LayerMask.GetMask("Layout");
+    }
 }

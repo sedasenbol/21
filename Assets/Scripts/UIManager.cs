@@ -11,8 +11,7 @@ public class UIManager : MonoBehaviour
     public static event Action OnStartWBobButtonClicked;
     public static event Action OnPauseButtonClicked;
     public static event Action OnResumeButtonClicked;
-    public static event Action OnLeftButtonClicked;
-    public static event Action OnRightButtonClicked;
+    public static event Action<BaseCharacter.Direction> OnLeftOrRightButtonClicked;
     public static event Action OnJumpButtonClicked;
 
     [SerializeField] private Button startWAliceButton;
@@ -71,12 +70,12 @@ public class UIManager : MonoBehaviour
 
     public void HandleLeftButtonClick()
     {
-        OnLeftButtonClicked?.Invoke();
+        OnLeftOrRightButtonClicked?.Invoke(BaseCharacter.Direction.left);
     }
 
     public void HandleRightButtonClick()
     {
-        OnRightButtonClicked?.Invoke();
+        OnLeftOrRightButtonClicked?.Invoke(BaseCharacter.Direction.right);
     }
 
     public void HandleJumpButtonClick()
@@ -138,12 +137,12 @@ public class UIManager : MonoBehaviour
     {
         if (Input.GetAxis("Horizontal") > 0 && lastRightHorizontalInputTime + horizontalInputPeriod < Time.time)
         {
-            OnRightButtonClicked?.Invoke();
+            OnLeftOrRightButtonClicked?.Invoke(BaseCharacter.Direction.right);
             lastRightHorizontalInputTime = Time.time;
         }
         else if (Input.GetAxis("Horizontal") < 0 && lastLeftHorizontalInputTime + horizontalInputPeriod < Time.time)
         {
-            OnLeftButtonClicked?.Invoke();
+            OnLeftOrRightButtonClicked?.Invoke(BaseCharacter.Direction.left);
             lastLeftHorizontalInputTime = Time.time;
         }
     }
