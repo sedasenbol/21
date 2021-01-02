@@ -509,7 +509,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   forwardSpeed: 7.5
   firstJumpForce: 10000
-  jumpSpecialtyForce: 500
+  jumpSpecialtyForce: 700
 --- !u!50 &920491841
 Rigidbody2D:
   serializedVersion: 4

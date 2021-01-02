@@ -5,12 +5,12 @@ using UnityEngine;
 public abstract class BaseCharacter : MonoBehaviour
 {
     [SerializeField] private float forwardSpeed;
-    [SerializeField] private float firstJumpForce;
+    [SerializeField] protected float firstJumpForce;
     [SerializeField] protected float jumpSpecialtyForce;
 
     private Transform xform;
     protected Rigidbody2D rb;
-    protected BoxCollider2D boxCollider;
+    private BoxCollider2D boxCollider;
 
     private Vector2 initialScale;
 
@@ -18,7 +18,8 @@ public abstract class BaseCharacter : MonoBehaviour
     private Vector2 raySize;
     private LayerMask platformLayerMask;
 
-    protected bool canPerformJumpSpecialty = true;
+    private bool canPerformJumpSpecialty = false;
+    protected bool isPerformingJumpSpecialty = false;
 
     protected Direction lastDirection = Direction.right;
 
@@ -47,9 +48,10 @@ public abstract class BaseCharacter : MonoBehaviour
             rb.AddForce(new Vector2(0f, firstJumpForce));
             canPerformJumpSpecialty = true;
         }
-        else if (canPerformJumpSpecialty && !CheckGroundCollision())
+        else if (canPerformJumpSpecialty && !CheckGroundCollision() && !CheckSideCollision())
         {
             PerformJumpSpecialty(lastDirection);
+            isPerformingJumpSpecialty = true;
             canPerformJumpSpecialty = false;
         }
     }
@@ -58,19 +60,17 @@ public abstract class BaseCharacter : MonoBehaviour
     {
         RaycastHit2D hit = Physics2D.BoxCast(boxCollider.bounds.center, raySize, 0f, Vector2.down, RAY_DISTANCE, platformLayerMask);
 
+        if (hit.collider)
+        {
+            isPerformingJumpSpecialty = false;
+            canPerformJumpSpecialty = false;
+        }
         return hit.collider;
     }
 
     protected abstract void PerformJumpSpecialty(Direction lastDirection);
 
     protected abstract void StopJumpSpecialty();
-
-    private void OnCollisionEnter2D(Collision2D collision)
-    {
-        if (collision.gameObject.layer != 8) { return; }
-
-        canPerformJumpSpecialty = false;
-    }
 
     private void OnEnable()
     {
@@ -93,5 +93,24 @@ public abstract class BaseCharacter : MonoBehaviour
         initialScale = xform.localScale;
         raySize = boxCollider.bounds.size;
         platformLayerMask = LayerMask.GetMask("Layout");
+    }
+
+    private bool CheckSideCollision()
+    {
+        RaycastHit2D hitRight = Physics2D.BoxCast(boxCollider.bounds.center, raySize, 0f, Vector2.right, RAY_DISTANCE, platformLayerMask);
+        RaycastHit2D hitLeft = Physics2D.BoxCast(boxCollider.bounds.center, raySize, 0f, Vector2.left, RAY_DISTANCE, platformLayerMask);
+
+        return hitRight.collider || hitLeft.collider;
+    }
+
+    protected virtual void Update()
+    {
+        if (!isPerformingJumpSpecialty) { return; }
+
+        CheckGroundCollision();
+
+        if (!CheckSideCollision()) { return; }
+
+        StopJumpSpecialty();
     }
 }

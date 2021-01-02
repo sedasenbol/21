@@ -35,16 +35,15 @@ public class Alice : BaseCharacter
         rb.velocity = new Vector2(0f, -Mathf.Abs(lastVerticalSpeed));
         Physics2D.gravity = new Vector2(0f, -21f);
         jumpSpecialtyTimer = 0f;
+        isPerformingJumpSpecialty = false;
     }
 
-    private void Update()
+    protected override void Update()
     {
+        base.Update();
+
         if (jumpSpecialtyTimer == 0f) { return; }
 
         CheckJumpSpecialtyTime();
-
-        if (!boxCollider.IsTouchingLayers(LayerMask.GetMask("Layout")) || CheckGroundCollision()) { return; }
-
-        StopJumpSpecialty();
     }
 }
