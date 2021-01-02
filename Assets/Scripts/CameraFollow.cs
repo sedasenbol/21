@@ -5,16 +5,14 @@ using UnityEngine.SceneManagement;
 
 public class CameraFollow : MonoBehaviour
 {
-    private Transform xform;
-    private Transform targetTransform;
-
     [SerializeField] private float smoothTimeX;
     [SerializeField] private float xOffset;
     [SerializeField] private float yPosition;
     [SerializeField] private float zPosition;
 
-    private float xVelocity = 0;
-
+    private Transform xform;
+    private Transform targetTransform;
+    private float xVelocity = 0f;
     private bool isGameStarted = false;
 
     private void SwitchToGameCamera(Scene scene, LoadSceneMode mode)

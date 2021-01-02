@@ -11,8 +11,9 @@ public class UIManager : MonoBehaviour
     public static event Action OnStartWBobButtonClicked;
     public static event Action OnPauseButtonClicked;
     public static event Action OnResumeButtonClicked;
-    public static event Action<BaseCharacter.Direction> OnLeftOrRightButtonClicked;
+    public static event Action<int> OnLeftOrRightButtonClicked;
     public static event Action OnJumpButtonClicked;
+    public static event Action OnQuitButtonClicked;
 
     [SerializeField] private Button startWAliceButton;
     [SerializeField] private Button startWBobButton;
@@ -70,12 +71,12 @@ public class UIManager : MonoBehaviour
 
     public void HandleLeftButtonClick()
     {
-        OnLeftOrRightButtonClicked?.Invoke(BaseCharacter.Direction.left);
+        OnLeftOrRightButtonClicked?.Invoke(-1);
     }
 
     public void HandleRightButtonClick()
     {
-        OnLeftOrRightButtonClicked?.Invoke(BaseCharacter.Direction.right);
+        OnLeftOrRightButtonClicked?.Invoke(1);
     }
 
     public void HandleJumpButtonClick()
@@ -101,7 +102,7 @@ public class UIManager : MonoBehaviour
 
     private void CheckStartWAliceButton()
     {
-        if (!Input.GetKeyDown(KeyCode.JoystickButton4)) { return; }
+        if (!Input.GetKeyDown(KeyCode.JoystickButton13)) { return; }
         
         UnloadMainMenuUI();
         OnStartWAliceButtonClicked?.Invoke();
@@ -109,15 +110,15 @@ public class UIManager : MonoBehaviour
 
     private void CheckStartWBobButton()
     {
-        if (!Input.GetKeyDown(KeyCode.JoystickButton5)) { return; }
+        if (!Input.GetKeyDown(KeyCode.JoystickButton12)) { return; }
 
         UnloadMainMenuUI();
         OnStartWBobButtonClicked?.Invoke();
     }
 
-    private void CheckPauseAndResumeButton()
+    private void CheckPauseAndResumeButton() 
     {
-        if (!Input.GetKeyDown(KeyCode.JoystickButton7)) { return; }
+        if (!Input.GetKeyDown(KeyCode.JoystickButton9)) { return; }
 
         if (isGamePaused)
         {
@@ -137,12 +138,12 @@ public class UIManager : MonoBehaviour
     {
         if (Input.GetAxis("Horizontal") > 0 && lastRightHorizontalInputTime + horizontalInputPeriod < Time.time)
         {
-            OnLeftOrRightButtonClicked?.Invoke(BaseCharacter.Direction.right);
+            OnLeftOrRightButtonClicked?.Invoke(1);
             lastRightHorizontalInputTime = Time.time;
         }
         else if (Input.GetAxis("Horizontal") < 0 && lastLeftHorizontalInputTime + horizontalInputPeriod < Time.time)
         {
-            OnLeftOrRightButtonClicked?.Invoke(BaseCharacter.Direction.left);
+            OnLeftOrRightButtonClicked?.Invoke(-1);
             lastLeftHorizontalInputTime = Time.time;
         }
     }
@@ -152,6 +153,13 @@ public class UIManager : MonoBehaviour
         if (!Input.GetKeyDown(KeyCode.JoystickButton0)) { return; }
 
         OnJumpButtonClicked?.Invoke();
+    }
+
+    private void CheckQuitButton()
+    {
+        if (Input.GetKeyDown(KeyCode.JoystickButton8)) { return; }
+
+        OnQuitButtonClicked?.Invoke();
     }
 
     private void Start()
@@ -170,13 +178,13 @@ public class UIManager : MonoBehaviour
             CheckStartWBobButton();
             return;
         }
-        
+
+        CheckQuitButton();
         CheckPauseAndResumeButton();
         
-        if (!isGamePaused)
-        {
-            CheckHorizontalInput();
-            CheckJumpButton();
-        }
+        if (isGamePaused) { return; }
+        
+        CheckHorizontalInput();
+        CheckJumpButton();
     }
 }

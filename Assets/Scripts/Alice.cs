@@ -18,6 +18,14 @@ public class Alice : BaseCharacter
         rb.AddForce((int)lastDirection * jumpSpecialtyForce * Vector2.right, ForceMode2D.Impulse);
     }
 
+    protected override void StopJumpSpecialty()
+    {
+        rb.velocity = new Vector2(0f, -Mathf.Abs(lastVerticalSpeed));
+        Physics2D.gravity = new Vector2(0f, -21f);
+        jumpSpecialtyTimer = 0f;
+        isPerformingJumpSpecialty = false;
+    }
+
     private void CheckJumpSpecialtyTime()
     {
         if (jumpSpecialtyTimer > jumpSpecialtyDuration)
@@ -28,14 +36,6 @@ public class Alice : BaseCharacter
         {
             jumpSpecialtyTimer += Time.deltaTime;
         }
-    }
-
-    protected override void StopJumpSpecialty()
-    {
-        rb.velocity = new Vector2(0f, -Mathf.Abs(lastVerticalSpeed));
-        Physics2D.gravity = new Vector2(0f, -21f);
-        jumpSpecialtyTimer = 0f;
-        isPerformingJumpSpecialty = false;
     }
 
     protected override void Update()

@@ -4,56 +4,33 @@ using UnityEngine;
 
 public abstract class BaseCharacter : MonoBehaviour
 {
-    [SerializeField] private float forwardSpeed;
     [SerializeField] protected float firstJumpForce;
     [SerializeField] protected float jumpSpecialtyForce;
+    [SerializeField] private float forwardSpeed;
+
+    protected Rigidbody2D rb;
+    protected bool isPerformingJumpSpecialty = false;
+    protected Direction lastDirection = Direction.Right;
 
     private Transform xform;
-    protected Rigidbody2D rb;
     private BoxCollider2D boxCollider;
-
     private Vector2 initialScale;
-
     private const float RAY_DISTANCE = 0.05f;
     private Vector2 raySize;
     private LayerMask platformLayerMask;
-
     private bool canPerformJumpSpecialty = false;
-    protected bool isPerformingJumpSpecialty = false;
 
-    protected Direction lastDirection = Direction.right;
-
-    public enum Direction
+    protected enum Direction
     {
-        right = 1,
-        left = -1,
+        Right = 1,
+        Left = -1,
     }
 
-    protected void SetForwardSpeed(Direction direction) 
+    protected void SetForwardSpeed(int direction) 
     {
-        rb.velocity = new Vector2((int)direction * forwardSpeed, rb.velocity.y);
-        lastDirection = direction;
+        rb.velocity = new Vector2(direction * forwardSpeed, rb.velocity.y);
+        lastDirection = (Direction)direction;
         FlipSprite();
-    }
-
-    private void FlipSprite()
-    {
-        xform.localScale = new Vector2((int)lastDirection * initialScale.x, initialScale.y);
-    }
-
-    private void Jump() 
-    {
-        if (CheckGroundCollision())
-        {
-            rb.AddForce(new Vector2(0f, firstJumpForce));
-            canPerformJumpSpecialty = true;
-        }
-        else if (canPerformJumpSpecialty && !CheckGroundCollision() && !CheckSideCollision())
-        {
-            PerformJumpSpecialty(lastDirection);
-            isPerformingJumpSpecialty = true;
-            canPerformJumpSpecialty = false;
-        }
     }
 
     protected bool CheckGroundCollision()
@@ -71,6 +48,34 @@ public abstract class BaseCharacter : MonoBehaviour
     protected abstract void PerformJumpSpecialty(Direction lastDirection);
 
     protected abstract void StopJumpSpecialty();
+
+    private void FlipSprite()
+    {
+        xform.localScale = new Vector2((int)lastDirection * initialScale.x, initialScale.y);
+    }
+
+    private void Jump()
+    {
+        if (CheckGroundCollision())
+        {
+            rb.AddForce(new Vector2(0f, firstJumpForce));
+            canPerformJumpSpecialty = true;
+        }
+        else if (canPerformJumpSpecialty && !CheckGroundCollision() && !CheckSideCollision())
+        {
+            PerformJumpSpecialty(lastDirection);
+            isPerformingJumpSpecialty = true;
+            canPerformJumpSpecialty = false;
+        }
+    }
+
+    private bool CheckSideCollision()
+    {
+        RaycastHit2D hitRight = Physics2D.BoxCast(boxCollider.bounds.center, raySize, 0f, Vector2.right, RAY_DISTANCE, platformLayerMask);
+        RaycastHit2D hitLeft = Physics2D.BoxCast(boxCollider.bounds.center, raySize, 0f, Vector2.left, RAY_DISTANCE, platformLayerMask);
+
+        return hitRight.collider || hitLeft.collider;
+    }
 
     private void OnEnable()
     {
@@ -93,14 +98,6 @@ public abstract class BaseCharacter : MonoBehaviour
         initialScale = xform.localScale;
         raySize = boxCollider.bounds.size;
         platformLayerMask = LayerMask.GetMask("Layout");
-    }
-
-    private bool CheckSideCollision()
-    {
-        RaycastHit2D hitRight = Physics2D.BoxCast(boxCollider.bounds.center, raySize, 0f, Vector2.right, RAY_DISTANCE, platformLayerMask);
-        RaycastHit2D hitLeft = Physics2D.BoxCast(boxCollider.bounds.center, raySize, 0f, Vector2.left, RAY_DISTANCE, platformLayerMask);
-
-        return hitRight.collider || hitLeft.collider;
     }
 
     protected virtual void Update()

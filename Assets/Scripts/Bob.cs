@@ -7,7 +7,7 @@ public class Bob : BaseCharacter
     protected override void PerformJumpSpecialty(Direction lastDirection)
     {
         rb.velocity = Vector2.zero;
-        rb.AddForce(new Vector2(0, -jumpSpecialtyForce), ForceMode2D.Impulse);
+        rb.AddForce(jumpSpecialtyForce * Vector2.down, ForceMode2D.Impulse);
     }
 
     protected override void StopJumpSpecialty()

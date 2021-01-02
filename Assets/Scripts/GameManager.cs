@@ -5,7 +5,6 @@ using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
-
     private void LoadSceneWAlice()
     {
         SceneManager.LoadScene(1, LoadSceneMode.Additive);
@@ -26,12 +25,18 @@ public class GameManager : MonoBehaviour
         Time.timeScale = 1f;
     }
 
+    private void QuitGame()
+    {
+        Application.Quit();
+    }
+
     private void OnEnable()
     {
         UIManager.OnStartWAliceButtonClicked += LoadSceneWAlice;
         UIManager.OnStartWBobButtonClicked += LoadSceneWBob;
         UIManager.OnPauseButtonClicked += PauseGame;
         UIManager.OnResumeButtonClicked += ResumeGame;
+        UIManager.OnQuitButtonClicked += QuitGame;
     }
 
     private void OnDisable()
@@ -40,15 +45,6 @@ public class GameManager : MonoBehaviour
         UIManager.OnStartWBobButtonClicked -= LoadSceneWBob;
         UIManager.OnPauseButtonClicked -= PauseGame;
         UIManager.OnResumeButtonClicked -= ResumeGame;
-    }
-
-    private void Start()
-    {
-        
-    }
-
-    private void Update()
-    {
-        
+        UIManager.OnQuitButtonClicked -= QuitGame;
     }
 }
